@@ -1,13 +1,10 @@
 import React, {Component} from 'react'
 import { connect } from 'react-redux'
 import { StyleSheet, View, Text, ImageBackground, Image, ScrollView, FlatList, DrawerLayoutAndroid } from 'react-native'
-import { CachedImage } from 'react-native-cached-image'
-import { Icon, Toast, Popover, Slider } from 'antd-mobile'
-import { Button, Header, AppFont, Touchable } from '../components'
+import { Icon, Toast, Slider } from 'antd-mobile'
+import { Button, AppFont, Touchable } from '../components'
 import Loading from './Loading'
-import { appHeight, defaultImg, createAction, appWidth, NavigationActions, Storage } from '../utils'
-
-const Item = Popover.Item;
+import { appHeight, createAction, appWidth, NavigationActions, Storage } from '../utils'
 
 @connect(({book, loading}) => ({...book, ...loading}))
 export default class extends Component {
@@ -130,10 +127,12 @@ export default class extends Component {
   };
 
   onGoDetail = () => {
+    this.setState({ modalVisible:false, popupMode:'' });
     this.props.dispatch(NavigationActions.navigate({routeName: 'Detail', params: this.state.book}));
   };
 
   onGoSwitching = () => {
+    this.setState({ modalVisible:false, popupMode:'' });
     this.props.dispatch(NavigationActions.navigate({routeName: 'Switching', params: this.state.book}));
   };
 
@@ -263,7 +262,7 @@ export default class extends Component {
     return (
       <View style={{flex:1,backgroundColor:'#efefef',paddingHorizontal:20}}>
         <View style={{height:50,flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
-          <View><Text style={{color:'#07f'}}>章节列表（{chapterList.length}）</Text></View>
+          <View><Text style={{color:'#07f',fontSize:16}}>章节列表（{chapterList.length}）</Text></View>
           <View style={{flexDirection:'row'}}>
             <Touchable style={styles.tag} onPress={()=>this.scrollTo(0)}>
               <Icon type={AppFont.up} size={16} color="#333" />
@@ -282,10 +281,10 @@ export default class extends Component {
             style={{backgroundColor:'#fff', height:appHeight-90}}
             renderItem={({item,index}) => (
               <Touchable style={styles.item} onPress={()=>this.onChapterClick(item)}>
-                <View style={{flex:5}}>
+                <View style={{flex:1}}>
                   <Text style={item.id===chapter.id?{color:'#07f'}:{}}>{item.name}</Text>
                 </View>
-                <View style={{flex:1, alignItems:'flex-end'}}>
+                <View style={{width:35, alignItems:'flex-end'}}>
                   {item.content ? <Text style={styles.cache}>已缓存</Text> : <Text />}
                 </View>
               </Touchable>
@@ -388,10 +387,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     backgroundColor: '#dd6041',
     paddingVertical: 3,
-    paddingHorizontal: 5
+    textAlign: 'center',
+    width: '100%'
   },
   item: {
-    paddingHorizontal: 15,
+    paddingLeft: 15,
+    paddingRight: 6,
     borderBottomWidth: 0.5,
     borderBottomColor: '#ddd',
     flexDirection: 'row',

@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
-import { StyleSheet, View, Text, Image, ScrollView, FlatList } from 'react-native'
+import { StyleSheet, View, Text, FlatList } from 'react-native'
 import { connect } from 'react-redux'
 import {Icon, SearchBar} from 'antd-mobile'
 import {CachedImage} from 'react-native-cached-image'
-import { Button, Header, AppFont, Touchable } from '../components'
-import { NavigationActions, Storage, createAction, appHeight, appWidth, defaultImg } from '../utils'
+import Loading from './Loading'
+import { Header, AppFont, Touchable } from '../components'
+import { NavigationActions, Storage, createAction, appWidth, defaultImg } from '../utils'
 
 @connect(({book, loading}) => ({...book, ...loading}))
 export default class extends Component {
@@ -15,6 +16,7 @@ export default class extends Component {
       keyword: '',
       pageType: 'history', // or result
       history: [],
+      page: 1,
     };
   }
 
@@ -36,9 +38,9 @@ export default class extends Component {
       if (history.indexOf(keyword) === -1) {
         history.unshift(keyword)
       }
-      this.setState({pageType: 'result', history, keyword});
+      this.setState({pageType: 'result', history, keyword, page:1});
       Storage.set('searchHistory', history);
-      this.props.dispatch(createAction('book/search')({keyword}))
+      this.props.dispatch(createAction('book/search')({keyword,page:1}))
     }
   };
 
@@ -52,11 +54,20 @@ export default class extends Component {
     this.props.dispatch(NavigationActions.navigate({routeName: 'Detail', params: item}));
   };
 
+  onNextPage = () => {
+    let {page, keyword} = this.state;
+    this.setState({ page: page+1 });
+    this.props.dispatch(createAction('book/search')({
+      keyword,
+      page: page + 1
+    }))
+  };
+
   render() {
     const {keyword, pageType} = this.state;
     return (
       <View style={styles.container}>
-        <Header back noRight>
+        <Header back noRight style={pageType!=='result'?{borderBottomWidth:0}:{}}>
           <SearchBar
             value={keyword}
             placeholder="关键字"
@@ -92,12 +103,17 @@ export default class extends Component {
   };
 
   renderList = () => {
-    const {searchList} = this.props;
-    return (
+    const {searchList, models} = this.props;
+    const loading = typeof models.book === 'undefined' ? true : models.book;
+    return loading && this.state.page === 0? (
+      <Loading/>
+    ) : (
       <FlatList
         data={searchList}
         keyExtractor={(item, i) => `${i}`}
         getItemLayout={(data, index) => ({length: 80, offset: 80 * index, index})}
+        onEndReachedThreshold={0.4}
+        onEndReached={this.onNextPage}
         renderItem={({item, index})=>(
           <Touchable style={styles.row} onPress={()=>this.onRowClick(item)}>
             <View style={{paddingHorizontal:15}}>
@@ -161,6 +177,6 @@ const styles = StyleSheet.create({
   },
   desc: {
     fontSize: 12,
-    color: '#777',
+    color: '#777'
   }
 });

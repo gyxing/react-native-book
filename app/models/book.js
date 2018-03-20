@@ -1,4 +1,4 @@
-import { createAction, NavigationActions, Storage, Format } from '../utils'
+import { createAction, Format } from '../utils'
 import {clear, search, addBook, getBooks, searchBookUrl, searchChapters, searchContent, updateBook, addChapters, getBook, getChapters, removeBook, refresh} from '../services/book'
 
 export default {
@@ -17,11 +17,17 @@ export default {
   },
   effects: {
     *search({payload}, { call, put }) {
-      const {data} = yield call(search, payload)
+      const {data} = yield call(search, payload);
       if(data){
-        yield put({ type:'setParam', payload:{
-          searchList: Format.books(data)
-        }});
+        let searchList = Format.books(data);
+        if(payload.page !== 1){
+          yield put(createAction('addToList')({
+            key: 'searchList',
+            value: searchList
+          }));
+        }else{
+          yield put({ type:'setParam', payload:{searchList}});
+        }
       }
     },
     *addBook({payload}, { call, put }) {

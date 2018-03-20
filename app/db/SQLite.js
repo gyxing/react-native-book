@@ -55,6 +55,7 @@ export default class SQLite extends Component{
                 'url VARCHAR,' +
                 'curChapterId INTEGER,' +
                 'hasNew INTEGER,' +
+                'scroll INTEGER,' +
                 'progress VARCHAR'
                 + ');'
                 , [], ()=> {
