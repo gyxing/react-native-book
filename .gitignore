@@ -33,9 +33,9 @@ local.properties
 # node.js
 #
 node_modules/
-apk/
 npm-debug.log
 yarn-error.log
+*.apk
 
 # BUCK
 buck-out/
