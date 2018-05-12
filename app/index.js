@@ -16,13 +16,13 @@ console.ignoredYellowBox = [
   'Warning: componentWillUpdate is deprecated',
 ]
 
-let storage = new RNStorage({
-  size: 100000,    // 最大容量，默认值100000条数据循环存储
+const storage = new RNStorage({
+  size: 100000, // 最大容量，默认值100000条数据循环存储
   storageBackend: AsyncStorage,
   defaultExpires: null,
-  enableCache: true
-});
-global._storage = storage;
+  enableCache: true,
+})
+global._storage = storage
 
 const app = dva({
   ...createLoading(),

@@ -21,9 +21,10 @@ import Detail from './containers/Detail'
 import Read from './containers/Read'
 import Switching from './containers/Switching'
 
-import {createAction} from './utils'
-import SQLite from './db/SQLite';
-const sqLite = new SQLite();
+import { createAction } from './utils'
+import SQLite from './db/SQLite'
+
+const sqLite = new SQLite()
 
 const MainNavigator = StackNavigator(
   {
@@ -40,7 +41,7 @@ const MainNavigator = StackNavigator(
 
 const AppNavigator = StackNavigator(
   {
-    Main: { screen: MainNavigator }
+    Main: { screen: MainNavigator },
   },
   {
     headerMode: 'none',
@@ -96,18 +97,18 @@ const addListener = createReduxBoundAddListener('root')
 class Router extends PureComponent {
   componentWillMount() {
     BackHandler.addEventListener('hardwareBackPress', this.backHandle)
-    global._dispatch = this.props.dispatch;
+    global._dispatch = this.props.dispatch
   }
 
   componentDidMount() {
-    initializeListeners('root', this.props.router);
-    sqLite.createTable();
+    initializeListeners('root', this.props.router)
+    sqLite.createTable()
     this.props.dispatch(createAction('book/refresh')({}))
   }
 
   componentWillUnmount() {
-    BackHandler.removeEventListener('hardwareBackPress', this.backHandle);
-    sqLite.close();
+    BackHandler.removeEventListener('hardwareBackPress', this.backHandle)
+    sqLite.close()
   }
 
   backHandle = () => {

@@ -22,7 +22,7 @@ const AppFont = {
   checkboxOn: '\uF006',
   menu: '\uE639',
   add: '\uE627',
-  share: '\uE671'
-};
+  share: '\uE671',
+}
 
-export default AppFont;
+export default AppFont
