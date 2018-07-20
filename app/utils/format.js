@@ -38,30 +38,36 @@ const books = html => {
 }
 
 /* 笔趣阁 - 格式化书籍列表 */
-const xsBook = html => {
+const xsBook = (html, origin) => {
   const res = []
   try {
-    const booksHtml = getHtmlObjectLong(
+    let booksHtml = getHtmlObjectLong(
       html,
       'div class="result-game-item-detail"',
       'div'
     )
     if (booksHtml.length > 0) {
       for (const div of booksHtml) {
-        const name = div.substring(
+        let name = div.substring(
           div.indexOf('title="') + 7,
           div.indexOf('" class=')
         ) // 书名
-        const chaptersUrl = div.substring(
+        let chaptersUrl = div.substring(
           div.indexOf('href="') + 6,
           div.indexOf('" title=')
         ) // 章节列表url
-        const author = removeTag(getHtmlObject(div, 'span')[0]).trim() // 作者
+        let author = removeTag(getHtmlObject(div, 'span')[0]).trim() // 作者
+        let newChapterName = '';
+        try {
+          newChapterName = removeTag(getHtmlObjectLong(div, 'a', 'a')[1]).trim() // 最新章节
+        }catch (e1) {}
 
-        res.push({ name, author, chaptersUrl, origin: 'www.qu.la' })
+        res.push({ name, author, chaptersUrl, newChapterName, origin: `www.${origin}` })
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log(e)
+  }
   return res
 }
 
@@ -78,7 +84,9 @@ const xsChapters = html => {
         }
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log(e)
+  }
 
   return res
 }

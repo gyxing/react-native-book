@@ -5,6 +5,14 @@ import SQLite from '../db/SQLite'
 const sqLite = new SQLite()
 import { Toast } from 'antd-mobile'
 
+const originList = [
+  {key:'xs.la', search:'http://zhannei.baidu.com/cse/search?s=1393206249994657467&q='},
+  {key:'qu.la', search:'http://zhannei.baidu.com/cse/search?s=920895234054625192&q='},
+  {key:'xs.la', search:'http://zhannei.baidu.com/cse/search?s=1393206249994657467&q='},
+  {key:'biqudu.com', search:'http://zhannei.baidu.com/cse/search?s=13603361664978768713&q='},
+  {key:'biqubook.com', search:'http://zhannei.baidu.com/cse/search?s=15781148592605450919&q='}
+];
+
 /* 联网搜索书本列表 */
 export async function search(params) {
   const url = `http://www.qidian.com/search?kw=${encodeURIComponent(
@@ -16,13 +24,14 @@ export async function search(params) {
 /* 联网查询书籍章节列表所在url */
 export async function searchBookUrl({ book }) {
   return new Promise((resolve, reject) => {
-    const url = `http://zhannei.baidu.com/cse/search?s=920895234054625192&q=${encodeURIComponent(
+    let defaultOrigin = originList[0];
+    let netUrl = `${defaultOrigin.search}${encodeURIComponent(
       book.name
-    )}`
-    request(url).then(({ data }) => {
-      let url = '',
-        origin = ''
-      for (const item of Format.xsBook(data)) {
+    )}`;
+    console.log(netUrl)
+    request(netUrl).then(({ data }) => {
+      let url = '', origin = ''
+      for (const item of Format.xsBook(data, defaultOrigin.key)) {
         if (item.name === book.name && item.author === book.author) {
           url = item.chaptersUrl
           origin = item.origin
@@ -40,6 +49,7 @@ export async function searchBookUrl({ book }) {
 
 /* 联网查询章节列表 */
 export async function searchChapters({ book }) {
+  console.log(book)
   return new Promise((resolve, reject) => {
     if (book.url) {
       request(book.url).then(({ data }) => {
@@ -186,6 +196,39 @@ export async function refresh({ book }) {
       })
     } else {
       resolve()
+    }
+  })
+}
+
+/* 切换下载源 */
+export async function exchange({ book, dlWay }) {
+  return new Promise((resolve, reject) => {
+    let res = [];
+    loop(originList);
+
+    function loop(arr) {
+      if(arr.length > 0) {
+        let originItem = arr[0];
+        let netUrl = `${originItem.search}${encodeURIComponent(book.name)}`;
+        request(netUrl).then(({ data }) => {
+          let url = '', origin = '', newChapterName = '';
+          let bookList = Format.xsBook(data, originItem.key);
+          for (let item of bookList) {
+            if (item.name === book.name && item.author === book.author) {
+              url = item.chaptersUrl;
+              origin = item.origin;
+              newChapterName = item.newChapterName;
+              break
+            }
+          }
+          if (url) {
+            res.push({ ...originItem, url, origin, newChapterName })
+          }
+          loop(arr.filter( (a,i) => i>0 ));
+        })
+      }else{
+        resolve({data:res})
+      }
     }
   })
 }

@@ -13,6 +13,7 @@ import {
   getChapters,
   removeBook,
   refresh,
+  exchange
 } from '../services/book'
 
 export default {
@@ -150,6 +151,15 @@ export default {
         yield put({ type: 'getBooks' })
       }
     },
+    /* 切换下载源 */
+    *exchange({ payload }, { call, put }) {
+      const { data } = yield call(exchange, payload);
+      if(data && payload.callback) {
+        payload.callback(data)
+      }
+    },
+    *dlOne({ payload }, { call, put }) {}
+
   },
   subscriptions: {
     setup({ dispatch }) {
