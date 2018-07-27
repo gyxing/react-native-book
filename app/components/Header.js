@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import PropTypes from 'prop-types'
-import { Icon } from 'antd-mobile'
+import { Icon } from 'antd-mobile-rn'
 import AppFont from './AppFont'
 import Touchable from './Touchable'
 import { NavigationActions, createAction } from '../utils'

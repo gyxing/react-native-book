@@ -10,7 +10,7 @@ import {
   FlatList,
   DrawerLayoutAndroid,
 } from 'react-native'
-import { Icon, Toast, Slider } from 'antd-mobile'
+import { Icon, Toast, Slider } from 'antd-mobile-rn'
 import { Button, AppFont, Touchable } from '../components'
 import Loading from './Loading'
 import {

@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { StyleSheet, View, Text, ScrollView } from 'react-native'
-import { Icon } from 'antd-mobile'
+import { Icon } from 'antd-mobile-rn'
 import { Header, AppFont, Touchable } from '../components'
 import Loading from './Loading'
 import {

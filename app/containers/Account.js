@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from 'react-native'
 import { connect } from 'react-redux'
-import { Modal, WhiteSpace } from 'antd-mobile'
+import { Modal, WhiteSpace } from 'antd-mobile-rn'
 import { Touchable } from '../components'
 
 import {

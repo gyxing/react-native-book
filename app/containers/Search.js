@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { StyleSheet, View, Text, FlatList } from 'react-native'
 import { connect } from 'react-redux'
-import { Icon, SearchBar } from 'antd-mobile'
+import { Icon, SearchBar } from 'antd-mobile-rn'
 import { CachedImage } from 'react-native-cached-image'
 import Loading from './Loading'
 import { Header, AppFont, Touchable } from '../components'

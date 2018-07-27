@@ -9,7 +9,7 @@ import {
   FlatList,
 } from 'react-native'
 import { CachedImage } from 'react-native-cached-image'
-import { Icon, Toast } from 'antd-mobile'
+import { Icon, Toast } from 'antd-mobile-rn'
 import { Button, Header, AppFont, Touchable } from '../components'
 import {
   appHeight,

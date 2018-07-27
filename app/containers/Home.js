@@ -9,7 +9,7 @@ import {
   RefreshControl,
 } from 'react-native'
 import { connect } from 'react-redux'
-import { Icon, Toast, Modal } from 'antd-mobile'
+import { Icon, Toast, Modal } from 'antd-mobile-rn'
 import { CachedImage } from 'react-native-cached-image'
 import { Button, Header, AppFont, Touchable } from '../components'
 import { NavigationActions, createAction, defaultImg, appWidth } from '../utils'
