@@ -58,6 +58,7 @@ export default class SQLite extends Component {
             `curChapterId INTEGER,` +
             `hasNew INTEGER,` +
             `scroll INTEGER,` +
+            `charset VARCHAR,` +
             `progress VARCHAR` +
             `);`,
           [],
@@ -74,6 +75,8 @@ export default class SQLite extends Component {
             `name VARCHAR,` +
             `url VARCHAR,` +
             `content TEXT,` +
+            `origin VARCHAR,` +
+            `charset VARCHAR,` +
             `bookId INTEGER` +
             `);`,
           [],
@@ -386,6 +389,35 @@ export default class SQLite extends Component {
         reject('db not open')
       }
     })
+  }
+  getChapter(id) {
+      // 获取章节信息
+      if (!db) {
+          this.open()
+      }
+      return new Promise((resolve, reject) => {
+          if (db) {
+              db.executeSql(
+                  `SELECT * FROM ${Chapter_TABLE_NAME} WHERE id=? LIMIT 1`,
+                  [id],
+                  results => {
+                      if (results.rows.length > 0) {
+                          resolve(results.rows.item(0))
+                      } else {
+                          reject('not find item')
+                      }
+
+                      this._successCB('getChapter')
+                  },
+                  err => {
+                      reject(err)
+                      this._errorCB('getChapter', err)
+                  }
+              )
+          } else {
+              reject('db not open')
+          }
+      })
   }
   /* 清空表数据 */
   clearAll() {

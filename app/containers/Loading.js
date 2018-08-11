@@ -1,18 +1,24 @@
-import React from 'react'
-import { StyleSheet, View, ActivityIndicator } from 'react-native'
+import React from "react";
+import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
 
-const Loading = () => (
-  <View style={styles.container}>
-    <ActivityIndicator size="large" />
-  </View>
-)
+const Loading = (props) => (
+    <View style={styles.container}>
+        <ActivityIndicator size="large"/>
+        {props.msg? (
+            <View style={styles.msg}><Text>{props.msg}</Text></View>
+        ) : null}
+    </View>
+);
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-})
+    container: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    msg: {
+        marginVertical: 10
+    }
+});
 
-export default Loading
+export default Loading;
