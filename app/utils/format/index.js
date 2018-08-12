@@ -7,6 +7,7 @@ import {
 
 import QuLa from './qula'
 import XS166 from './xs166'
+import BiQuKan from './biqukan'
 
 /* 起点中文网 - 格式化书籍列表 */
 const books = html => {
@@ -50,6 +51,9 @@ const book = (html, origin) => {
         case '166xs.com':
             res = XS166.books(html, origin);
             break;
+        case 'biqukan.com':
+            res = BiQuKan.books(html, origin);
+            break;
     }
     return res;
 };
@@ -58,10 +62,13 @@ const chapters = (html, book) => {
     let res = [];
     switch (book.origin) {
         case 'qu.la':
-            res = QuLa.chapters(html, `http://www.${book.origin}`);
+            res = QuLa.chapters(html, `https://www.${book.origin}`);
             break;
         case '166xs.com':
             res = XS166.chapters(html, book.url);
+            break;
+        case 'biqukan.com':
+            res = BiQuKan.chapters(html, book.url);
             break;
     }
     return res;
@@ -76,6 +83,9 @@ const content = (html, origin) => {
         case '166xs.com':
             res = XS166.content(html);
             break;
+        case 'biqukan.com':
+            res = BiQuKan.content(html);
+            break;
     }
     return res;
 };
@@ -88,6 +98,10 @@ const newChapterName = (html, origin) => {
             break;
         case '166xs.com':
             res = XS166.newChapterName(html);
+            break;
+        case 'biqukan.com':
+            res = BiQuKan.newChapterName(html);
+            console.log(res)
             break;
     }
     return res;

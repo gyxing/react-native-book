@@ -40,7 +40,17 @@ export default class extends Component {
                         );
                     },
                     onError: () => {
-                        Toast.fail("缺乏资源，无法阅读", 1);
+                        Modal.alert("此来源缺少数据", "是否切换下载源？", [
+                            { text: "不用", style: "cancel" },
+                            {
+                                text: "切换",
+                                onPress: () => {
+                                    this.props.dispatch(
+                                        NavigationActions.navigate({ routeName: "Switching", params: { book: item, dlWay: "all" } })
+                                    );
+                                }
+                            }
+                        ]);
                     }
                 })
             );
@@ -95,8 +105,8 @@ export default class extends Component {
                 ),
                 onPress: () => {
                     this.props.dispatch(
-                        NavigationActions.navigate({ routeName: 'Switching', params: { book: item, dlWay: 'all' } })
-                    )
+                        NavigationActions.navigate({ routeName: "Switching", params: { book: item, dlWay: "all" } })
+                    );
                 },
                 style: { textAlign: "center" }
             }

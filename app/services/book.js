@@ -5,13 +5,11 @@ import SQLite from "../db/SQLite";
 const sqLite = new SQLite();
 
 const originList = [
-    { key: "qu.la", search: "http://zhannei.baidu.com/cse/search?s=920895234054625192&q=", charset: 'utf8' },
-    { key: "166xs.com", search: "http://zhannei.baidu.com/cse/search?s=4838975422224043700&wt=1&q=", charset: 'gbk' },
+    { key: "qu.la", search: "http://zhannei.baidu.com/cse/search?s=920895234054625192&q=", searchCharset: 'utf8', charset: 'utf8' },
+    { key: "166xs.com", search: "http://zhannei.baidu.com/cse/search?s=4838975422224043700&wt=1&q=", searchCharset: 'utf8', charset: 'gbk' },
+    // { key: "dingdiann.com", search: "https://www.dingdiann.com/searchbook.php?keyword=", charset: "utf8" },
     // { key: "23us.cc", search: "https://sou.xanbhx.com/search?t=920895234054625192&siteid=23uscc&q=" },
-    // { key: "xxbiquge.com", search: "https://www.xxbiquge.com/search.php?keyword=" },
-    // { key: "xs.la", search: "http://zhannei.baidu.com/cse/search?s=1393206249994657467&q=" },
-    // { key: "biqudu.com", search: "http://zhannei.baidu.com/cse/search?s=13603361664978768713&q=" },
-    // { key: "biqubook.com", search: "http://zhannei.baidu.com/cse/search?s=15781148592605450919&q=" }
+    { key: "biqukan.com", search: "http://www.biqukan.com/s.php?ie=gbk&s=2758772450457967865&q=", searchCharset: 'gbk', charset: 'gbk' },
 ];
 
 /* 联网 - 搜索书本列表 */
@@ -29,7 +27,7 @@ export async function searchBookUrl({ book }) {
         let netUrl = `${defaultOrigin.search}${encodeURIComponent(
             book.name
         )}`;
-        request(netUrl).then(({ data }) => {
+        request(netUrl, {charset:defaultOrigin.searchCharset}).then(({ data }) => {
             let url = "", origin = "", charset = '';
             for (const item of Format.book(data, defaultOrigin.key)) {
                 if (item.name === book.name && item.author === book.author) {
@@ -50,7 +48,6 @@ export async function searchBookUrl({ book }) {
 
 /* 联网 - 查询章节列表 */
 export async function searchChapters({ book }) {
-    console.log('book',book)
     return new Promise((resolve, reject) => {
         if (book.url) {
             request(book.url, {charset:book.charset}).then(({ data }) => {
@@ -70,9 +67,10 @@ export async function searchChapters({ book }) {
 
 /* 联网 - 查询章节内容 */
 export async function searchContent({ chapter }) {
-    console.log(chapter)
+    console.log(chapter);
     return new Promise((resolve, reject) => {
         request(chapter.url, {charset:chapter.charset}).then(({ data }) => {
+            console.log(data);
             const content = Format.content(data, chapter.origin);
             sqLite.updateChapter(chapter.id, { content }).then(() => {
                 resolve({ data: content });
@@ -212,7 +210,6 @@ export async function refresh({ book }) {
 export async function exchange({ book }) {
     return new Promise((resolve, reject) => {
         let res = [];
-
         Storage.get(`${book.name}-${book.author}`).then( sList => {
             if(sList && sList.length > 0 && sList.length === originList.length) {
                 reLoop(sList);
@@ -225,10 +222,12 @@ export async function exchange({ book }) {
         function reLoop(arr) {
             if (arr.length > 0) {
                 let rowItem = arr[0];
-                request(rowItem.url).then(ret => {
+                request(rowItem.url, {charset:rowItem.charset}).then(ret => {
                     if (ret) {
                         let newChapterName = Format.newChapterName(ret.data, rowItem.origin);
                         res.push({ ...rowItem, newChapterName });
+                        initLoop(arr.filter((a, i) => i > 0));
+                    }else{
                         initLoop(arr.filter((a, i) => i > 0));
                     }
                 });
@@ -243,7 +242,7 @@ export async function exchange({ book }) {
             if (arr.length > 0) {
                 let originItem = arr[0];
                 let netUrl = `${originItem.search}${encodeURIComponent(book.name)}`;
-                request(netUrl).then(({ data }) => {
+                request(netUrl, {charset:originItem.searchCharset}).then(({ data }) => {
                     let url = "", origin = "";
                     let bookList = Format.book(data, originItem.key);
                     for (let item of bookList) {
@@ -260,8 +259,12 @@ export async function exchange({ book }) {
                                 let newChapterName = Format.newChapterName(ret.data, origin);
                                 res.push({ ...originItem, url, origin, newChapterName });
                                 initLoop(arr.filter((a, i) => i > 0));
+                            } else {
+                                initLoop(arr.filter((a, i) => i > 0));
                             }
                         });
+                    } else {
+                        initLoop(arr.filter((a, i) => i > 0));
                     }
                 });
             } else {
@@ -274,14 +277,12 @@ export async function exchange({ book }) {
 
 /* 更改下载源 */
 export async function replaceChapters ({ book, dlWay, origin }) {
-    console.log(book, origin, dlWay);
     return new Promise((resolve, reject) => {
         let bookTemp = {...book};
         bookTemp.charset = origin.charset;
         bookTemp.url = origin.url;
         bookTemp.origin = origin.origin;
         searchChapters({book:bookTemp}).then( ret => {
-            console.log("已获得所有章节");
             let chapters = ret.data;
             if(chapters && chapters.length > 0) {
                 switch(dlWay) {

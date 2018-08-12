@@ -30,7 +30,11 @@ export default class extends Component {
         this.props.dispatch(createAction("book/exchange")({
             book: this.book,
             callback: (data) => {
-                this.setState({ resourceList: data });
+                if(data.length > 0) {
+                    this.setState({ resourceList: data });
+                } else {
+                    Toast.fail('缺少资源', 2)
+                }
             }
         }));
     }

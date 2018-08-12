@@ -50,7 +50,7 @@ const QuLa = {
                 for (let dd of chaptersHtml) {
                     let chUrl = dd.substring(dd.indexOf("href=\"") + 6, dd.indexOf("\">"));
                     if (chUrl.indexOf("/") === 0) {
-                        res.push({ url: `${baseUrl}/${chUrl}`, name: removeTag(dd).trim() });
+                        res.push({ url: `${baseUrl}${chUrl}`, name: removeTag(dd).trim() });
                     }
                 }
             }
