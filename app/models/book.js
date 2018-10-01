@@ -125,9 +125,7 @@ export default {
         },
         * searchContent({ payload }, { call, put }) {
             const { data } = yield call(searchContent, payload);
-            if (data && payload.callback) {
-                payload.callback(data);
-            }
+            payload.callback && payload.callback(data);
         },
         * updateBook({ payload }, { call, put }) {
             const { data } = yield call(updateBook, payload);
@@ -166,7 +164,6 @@ export default {
             const { callback, callbackOne, callbackMore, dlWay } = payload;
             const { data } = yield call(replaceChapters, payload);
             if (data) {
-                console.log('成功')
                 switch (dlWay) {
                     case 'one': callbackOne(data); break;
                     case 'more': callbackMore(); break;

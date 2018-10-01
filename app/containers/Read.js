@@ -10,7 +10,7 @@ import {
     FlatList,
     DrawerLayoutAndroid
 } from "react-native";
-import { Icon, Toast, Slider } from "antd-mobile-rn";
+import { Icon, Toast, Slider, Modal } from "antd-mobile-rn";
 import { Button, AppFont, Touchable } from "../components";
 import Loading from "./Loading";
 import {
@@ -107,19 +107,29 @@ export default class extends Component {
                     chapter,
                     callback: content => {
                         Toast.hide();
-                        chapter.content = content;
-                        chapterList.find(item => item.id === chapter.id).content = content;
-                        this.setState({
-                            book,
-                            chapter,
-                            chapterList,
-                            modalVisible: false,
-                            popupMode: ""
-                        });
-                        this.scrollToTop();
-                        this.drawer.closeDrawer();
-                        // 自动缓存后5章
-                        this.onCache(5);
+                        if(content) {
+                            chapter.content = content;
+                            chapterList.find(item => item.id === chapter.id).content = content;
+                            this.setState({
+                                book,
+                                chapter,
+                                chapterList,
+                                modalVisible: false,
+                                popupMode: ""
+                            });
+                            this.scrollToTop();
+                            this.drawer.closeDrawer();
+                            // 自动缓存后5章
+                            this.onCache(5);
+                        } else {
+                            this.setState({
+                                book,
+                                chapter,
+                                chapterList
+                            });
+                            // Toast.fail('缺少资源: ' + JSON.stringify(chapter))
+                            Modal.alert('缺少资源', JSON.stringify(chapter, null, 2))
+                        }
                     }
                 })
             );
@@ -283,7 +293,13 @@ export default class extends Component {
                 style={{ width: appWidth, height: "100%" }}
             >
                 {!chapter.content ? (
-                    <Loading/>
+                    <Touchable
+                        activeOpacity={1}
+                        style={{ flex: 1 }}
+                        onPress={() => this.setState({ modalVisible: true })}
+                    >
+                        <Loading/>
+                    </Touchable>
                 ) : (
                     <ScrollView style={{ flex: 1 }} ref={ref => (this._scrollView = ref)}>
                         <Touchable

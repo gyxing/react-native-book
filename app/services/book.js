@@ -67,14 +67,16 @@ export async function searchChapters({ book }) {
 
 /* 联网 - 查询章节内容 */
 export async function searchContent({ chapter }) {
-    console.log(chapter);
     return new Promise((resolve, reject) => {
         request(chapter.url, {charset:chapter.charset}).then(({ data }) => {
-            console.log(data);
             const content = Format.content(data, chapter.origin);
-            sqLite.updateChapter(chapter.id, { content }).then(() => {
-                resolve({ data: content });
-            });
+            if(content) {
+                sqLite.updateChapter(chapter.id, { content }).then(() => {
+                    resolve({ data: content });
+                });
+            } else {
+                resolve({ data: '' });
+            }
         });
     });
 }
@@ -171,7 +173,9 @@ export async function refresh({ book }) {
                             chpList.push({
                                 ...item,
                                 bookId: book.id,
-                                url: item.url
+                                url: item.url,
+                                charset: book.charset,
+                                origin: book.origin
                             });
                         }
                     });
