@@ -7,7 +7,7 @@ const sqLite = new SQLite();
 const originList = [
     { key: "qu.la", search: "http://zhannei.baidu.com/cse/search?s=920895234054625192&q=", searchCharset: 'utf8', charset: 'utf8' },
     { key: "166xs.com", search: "http://zhannei.baidu.com/cse/search?s=4838975422224043700&wt=1&q=", searchCharset: 'utf8', charset: 'gbk' },
-    // { key: "dingdiann.com", search: "https://www.dingdiann.com/searchbook.php?keyword=", charset: "utf8" },
+    { key: "dingdiann.com", search: "https://www.dingdiann.com/searchbook.php?keyword=", charset: "utf8" },
     // { key: "23us.cc", search: "https://sou.xanbhx.com/search?t=920895234054625192&siteid=23uscc&q=" },
     { key: "biqukan.com", search: "http://www.biqukan.com/s.php?ie=gbk&s=2758772450457967865&q=", searchCharset: 'gbk', charset: 'gbk' },
 ];
@@ -28,12 +28,12 @@ export async function searchBookUrl({ book }) {
             book.name
         )}`;
         request(netUrl, {charset:defaultOrigin.searchCharset}).then(({ data }) => {
-            let url = "", origin = "", charset = '';
+            let url = "", origin = defaultOrigin.key, charset = defaultOrigin.charset;
             for (const item of Format.book(data, defaultOrigin.key)) {
                 if (item.name === book.name && item.author === book.author) {
                     url = item.chaptersUrl;
-                    origin = defaultOrigin.key;
-                    charset = defaultOrigin.charset;
+                    // origin = defaultOrigin.key;
+                    // charset = defaultOrigin.charset;
                     break;
                 }
             }
