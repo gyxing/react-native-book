@@ -13,23 +13,26 @@ const QuLa = {
         try {
             let booksHtml = getHtmlObjectLong(
                 html,
-                "div class=\"result-game-item-detail\"",
-                "div"
+                "li",
+                "li"
             );
-            if (booksHtml.length > 0) {
+            if (booksHtml.length > 1) {
+                booksHtml.shift();
                 for (const div of booksHtml) {
+                    // 书名
                     let name = div.substring(
-                        div.indexOf("title=\"") + 7,
-                        div.indexOf("\" class=")
-                    ); // 书名
+                        div.indexOf("target=\"_blank\"") + 16,
+                        div.indexOf("</a>")
+                    ).trim();
+                    // 章节列表url
                     let chaptersUrl = div.substring(
                         div.indexOf("href=\"") + 6,
-                        div.indexOf("\" title=")
-                    ); // 章节列表url
-                    let author = removeTag(getHtmlObject(div, "span")[0]).trim(); // 作者
+                        div.indexOf("\" target=")
+                    );
+                    let author = removeTag(getHtmlObjectLong(div, "span class=\"s4\"", "span")[0]).trim(); // 作者
                     let newChapterName = "";
                     try {
-                        newChapterName = removeTag(getHtmlObjectLong(div, "a", "a")[1]).trim(); // 最新章节
+                        newChapterName = removeTag(getHtmlObjectLong(div, "span class=\"s3\"", "span")[0]).trim(); // 最新章节
                     } catch (e1) {
                     }
 
@@ -64,8 +67,10 @@ const QuLa = {
         try {
             let list = getHtmlObjectLong(html, "div id=\"content\"", "div");
             let content = removeTag(
-                replaceAll(list[0].replace("<br/>", "\n"), "<br/>", "\n")
+                replaceAll(list[0], "<br />", "\n")
             );
+            content = replaceAll(content, "&nbsp;", "").trim();
+            content = replaceAll(content, "Ｘ２３ＵＳ．ＣＯＭ更新最快", "");
             return replaceAll(content, "&nbsp;", "").trim();
         } catch (e) {
         }

@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import SQLiteStorage from 'react-native-sqlite-storage'
 
-SQLiteStorage.DEBUG(true)
+SQLiteStorage.DEBUG(false)
 const database_name = 'reader.db'
 const database_version = '1.0'
 const database_displayname = 'ReaderSQLite'

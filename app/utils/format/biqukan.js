@@ -41,7 +41,10 @@ const BiQuKan = {
                 }
                 for (let dd of chaptersHtml) {
                     let chUrl = dd.substring(dd.indexOf('href ="') + 7, dd.indexOf('">'));
-                    res.push({ url: `http://www.biqukan.com${chUrl}`, name: removeTag(dd).trim() });
+                    let name = removeTag(dd).trim();
+                    if (name.indexOf('biqukan.com') === -1) {
+                        res.push({ url: `http://www.biqukan.com${chUrl}`, name: removeTag(dd).trim() });
+                    }
                 }
             }
         } catch (e) {
