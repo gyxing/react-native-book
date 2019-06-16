@@ -21,6 +21,7 @@ import {
     NavigationActions,
     Storage
 } from "../utils";
+import Operation from './item/Operation';
 
 @connect(({ book, loading }) => ({ ...book, ...loading }))
 export default class extends Component {
@@ -32,8 +33,6 @@ export default class extends Component {
             book: {},
             chapter: {},
             chapterList: [],
-            modalVisible: false,
-            popupMode: "",
 
             fontSize: 18,
             paper: "paper",
@@ -94,8 +93,6 @@ export default class extends Component {
                 book,
                 chapter,
                 chapterList,
-                modalVisible: false,
-                popupMode: ""
             });
             this.scrollToTop();
             this.drawer.closeDrawer();
@@ -115,8 +112,6 @@ export default class extends Component {
                                 book,
                                 chapter,
                                 chapterList,
-                                modalVisible: false,
-                                popupMode: ""
                             });
                             this.scrollToTop();
                             this.drawer.closeDrawer();
@@ -128,7 +123,6 @@ export default class extends Component {
                                 chapter,
                                 chapterList
                             });
-                            // Toast.fail('缺少资源: ' + JSON.stringify(chapter))
                             Modal.alert('缺少资源', JSON.stringify(chapter, null, 2))
                         }
                     }
@@ -194,7 +188,6 @@ export default class extends Component {
     };
 
     onGoDetail = () => {
-        this.setState({ modalVisible: false, popupMode: "" });
         this.props.dispatch(
             NavigationActions.navigate({
                 routeName: "Detail",
@@ -204,7 +197,6 @@ export default class extends Component {
     };
 
     onGoSwitching = () => {
-        this.setState({ modalVisible: false, popupMode: "" });
         this.props.dispatch(
             NavigationActions.navigate({
                 routeName: "Switching",
@@ -222,7 +214,6 @@ export default class extends Component {
     };
 
     onCache = len => {
-        this.setState({ modalVisible: false, popupMode: "" });
         const { chapter, chapterList } = this.state;
         const index = chapterList.findIndex(item => item.id === chapter.id);
         if (len === -1) {
@@ -261,7 +252,6 @@ export default class extends Component {
     };
 
     onToWebPage = () => {
-        this.setState({ modalVisible: false, popupMode: "" });
         const url = this.state.chapter.url;
         Linking.canOpenURL(url).then(supported => {
             if (!supported) {
@@ -270,15 +260,10 @@ export default class extends Component {
                 return Linking.openURL(url);
             }
         }).catch(err => Toast.fail('An error occurred：' + url));
-        /*this.props.dispatch(
-            NavigationActions.navigate({
-                routeName: "WebPage",
-                params: {
-                    title: this.state.book.name,
-                    url: this.state.chapter.url
-                }
-            })
-        );*/
+    };
+
+    showOperate = () => {
+        this.operate.show()
     };
 
     render() {
@@ -292,7 +277,6 @@ export default class extends Component {
             >
                 {this.renderContent()}
                 {this.renderModal()}
-                {this.renderPopup()}
             </DrawerLayoutAndroid>
         );
     }
@@ -318,7 +302,7 @@ export default class extends Component {
                     <Touchable
                         activeOpacity={1}
                         style={{ flex: 1 }}
-                        onPress={() => this.setState({ modalVisible: true })}
+                        onPress={() => this.showOperate()}
                     >
                         <Loading/>
                     </Touchable>
@@ -327,7 +311,7 @@ export default class extends Component {
                         <Touchable
                             activeOpacity={1}
                             style={{ flex: 1 }}
-                            onPress={() => this.setState({ modalVisible: true })}
+                            onPress={() => this.showOperate()}
                         >
                             <Text style={[styles.name, { fontSize: fontSize + 2, color }]}>
                                 {chapter.name}
@@ -355,84 +339,25 @@ export default class extends Component {
     };
 
     renderModal = () => {
-        const { modalVisible, book, chapter, popupMode, night } = this.state;
-        const color = "#082646";
-        return modalVisible ? (
-            <Touchable
-                activeOpacity={1}
-                style={styles.modal}
-                onPress={() => this.setState({ modalVisible: false, popupMode: "" })}
-            >
-                <View style={styles.head}>
-                    <Text numberOfLines={1} style={{ color: "#333" }}>
-                        {book.name} {chapter.name}
-                    </Text>
-                </View>
-                <View style={styles.center}>
-                    <Touchable
-                        style={styles.left}
-                        onPress={() => this.drawer.openDrawer()}
-                    >
-                        <Icon type={AppFont.doubleRight} color="#666"/>
-                    </Touchable>
-                    <Touchable style={styles.right}>
-                        <Text
-                            style={[
-                                styles.rightI,
-                                { borderBottomWidth: 0.5, borderBottomColor: "#eee", color }
-                            ]}
-                            onPress={this.onPrevious}
-                        >
-                            上一章
-                        </Text>
-                        <Text style={[styles.rightI, { color }]} onPress={this.onNext}>
-                            下一章
-                        </Text>
-                    </Touchable>
-                </View>
-                <View style={styles.foot}>
-                    <Touchable
-                        style={styles.footI}
-                        onPress={() => this.props.dispatch(NavigationActions.back())}
-                    >
-                        <Icon type={AppFont.left} size={23} color={color}/>
-                    </Touchable>
-                    <Touchable
-                        style={styles.footI}
-                        onPress={() =>
-                            this.setState({ popupMode: popupMode === "font" ? "" : "font" })
-                        }
-                    >
-                        <Icon type={AppFont.font} size={23} color={color}/>
-                    </Touchable>
-                    <Touchable
-                        style={styles.footI}
-                        onPress={() =>
-                            this.setState({ popupMode: popupMode === "paper" ? "" : "paper" })
-                        }
-                    >
-                        <Icon type={AppFont.light} size={28} color={color}/>
-                    </Touchable>
-                    <Touchable
-                        style={styles.footI}
-                        onPress={() => {
-                            this.setState({ popupMode: "" });
-                            this.onSetup("night", !night);
-                        }}
-                    >
-                        <Icon type={AppFont.moon} size={20} color={color}/>
-                    </Touchable>
-                    <Touchable
-                        style={styles.footI}
-                        onPress={() =>
-                            this.setState({ popupMode: popupMode === "more" ? "" : "more" })
-                        }
-                    >
-                        <Icon type={AppFont.more} size={26} color={color}/>
-                    </Touchable>
-                </View>
-            </Touchable>
-        ) : null;
+        const { book, chapter, night, fontSize, paper } = this.state;
+        return (
+            <Operation
+                ref={r => this.operate = r}
+                title={book.name + ' ' + chapter.name}
+                fontSize={fontSize}
+                paper={paper}
+                onBack={() => this.props.dispatch(NavigationActions.back())}
+                openDrawer={() => this.drawer.openDrawer()}
+                onPrevious={() => this.onPrevious()}
+                onNext={() => this.onNext()}
+                onNight={() => this.onSetup("night", !night)}
+                onSetup={(k, v) => this.onSetup(k, v)}
+                onGoDetail={() => this.onGoDetail()}
+                onCache={(v) => this.onCache(v)}
+                onGoSwitching={() => this.onGoSwitching()}
+                onGoWebPage={() => this.onToWebPage()}
+            />
+        )
     };
 
     renderChapterList = () => {
@@ -500,134 +425,13 @@ export default class extends Component {
                 </View>
             </View>
         );
-    };
-
-    renderPopup = () => {
-        const { popupMode, fontSize, paper } = this.state;
-        if (popupMode === "font") {
-            return (
-                <View style={[styles.popup, { width: 240, left: appWidth / 2 - 120 }]}>
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "flex-start",
-                            height: 30,
-                            paddingHorizontal: 8
-                        }}
-                    >
-                        <Text>字体：{fontSize}</Text>
-                        <Button
-                            title=""
-                            text="默认"
-                            textStyle={{ fontSize: 10 }}
-                            style={{ paddingHorizontal: 5, paddingVertical: 3 }}
-                            onPress={() => this.onSetup("fontSize", 18)}
-                        />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Slider
-                            defaultValue={fontSize}
-                            min={10}
-                            max={40}
-                            step={2}
-                            onAfterChange={val => this.onSetup("fontSize", val)}
-                        />
-                    </View>
-                </View>
-            );
-        } else if (popupMode === "paper") {
-            return (
-                <View
-                    style={[
-                        styles.popup,
-                        {
-                            width: 180,
-                            left: appWidth / 2 - 90,
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            paddingHorizontal: 20
-                        }
-                    ]}
-                >
-                    <Touchable onPress={() => this.onSetup("paper", "default")}>
-                        <Image
-                            source={require("../images/pages/default.png")}
-                            style={styles.paper}
-                        />
-                    </Touchable>
-                    <Touchable onPress={() => this.onSetup("paper", "paper")}>
-                        <Image
-                            source={require("../images/pages/paper.jpg")}
-                            style={styles.paper}
-                        />
-                    </Touchable>
-                </View>
-            );
-        } else if (popupMode === "more") {
-            return (
-                <View style={[styles.popup, { width: 200, left: appWidth / 2 - 100 }]}>
-                    <Touchable style={styles.line} onPress={this.onGoDetail}>
-                        <Icon type={AppFont.info} size={16} color="#444"/>
-                        <Text style={styles.lineTxt}>详情</Text>
-                    </Touchable>
-                    <Touchable style={styles.line} onPress={() => this.onCache(50)}>
-                        <Icon type={AppFont.download} size={18} color="#444"/>
-                        <Text style={styles.lineTxt}>缓存后面50章</Text>
-                    </Touchable>
-                    <Touchable style={styles.line} onPress={() => this.onCache(-1)}>
-                        <Icon type={AppFont.download} size={18} color="#444"/>
-                        <Text style={styles.lineTxt}>缓存剩余章节</Text>
-                    </Touchable>
-                    <Touchable style={styles.line} onPress={this.onGoSwitching}>
-                        <Icon type={AppFont.change} size={16} color="#444"/>
-                        <Text style={styles.lineTxt}>切换下载源</Text>
-                    </Touchable>
-                    <Touchable style={[styles.line, { borderBottomWidth: 0 }]} onPress={() => this.onToWebPage()}>
-                        <Icon type={AppFont.ie} size={18} color="#444"/>
-                        <Text style={styles.lineTxt}>浏览器打开</Text>
-                    </Touchable>
-                </View>
-            );
-        }
-    };
+    }
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#eee"
-    },
-    modal: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: appWidth,
-        height: appHeight - 25,
-        justifyContent: "space-between"
-    },
-    head: {
-        justifyContent: "center",
-        alignItems: "center",
-        height: 50,
-        backgroundColor: "#fff"
-    },
-    center: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center"
-    },
-    left: {
-        backgroundColor: "#fff",
-        paddingHorizontal: 15,
-        paddingVertical: 20
-    },
-    right: {
-        backgroundColor: "#fff"
-    },
-    rightI: {
-        paddingHorizontal: 15,
-        paddingVertical: 20
     },
     cache: {
         fontSize: 10,
@@ -647,16 +451,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         height: 40
     },
-    foot: {
-        flexDirection: "row",
-        height: 60,
-        backgroundColor: "#fff"
-    },
-    footI: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center"
-    },
     name: {
         textAlign: "center",
         marginTop: 20,
@@ -666,37 +460,6 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         paddingHorizontal: 20,
         lineHeight: 35
-    },
-    popup: {
-        backgroundColor: "#fff",
-        position: "absolute",
-        borderRadius: 4,
-        paddingHorizontal: 8,
-        paddingVertical: 10,
-        bottom: 80
-    },
-    def: {
-        borderWidth: 0.5,
-        borderColor: "#bbb",
-        borderRadius: 4,
-        paddingHorizontal: 5,
-        paddingVertical: 3
-    },
-    paper: {
-        width: 60,
-        height: 40
-    },
-    line: {
-        flexDirection: "row",
-        alignItems: "center",
-        height: 40,
-        borderBottomColor: "#eee",
-        borderBottomWidth: 0.5,
-        paddingHorizontal: 20
-    },
-    lineTxt: {
-        color: "#444",
-        marginLeft: 10
     },
     tag: {
         backgroundColor: "#fff",
