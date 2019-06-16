@@ -8,7 +8,8 @@ import {
     Image,
     ScrollView,
     FlatList,
-    DrawerLayoutAndroid
+    DrawerLayoutAndroid,
+    Linking
 } from "react-native";
 import { Icon, Toast, Slider, Modal } from "antd-mobile-rn";
 import { Button, AppFont, Touchable } from "../components";
@@ -257,6 +258,27 @@ export default class extends Component {
             const index = chapterList.findIndex(item => item.id === chapter.id);
             this.scrollTo(index > 5 ? index - 5 : 0);
         }
+    };
+
+    onToWebPage = () => {
+        this.setState({ modalVisible: false, popupMode: "" });
+        const url = this.state.chapter.url;
+        Linking.canOpenURL(url).then(supported => {
+            if (!supported) {
+                Toast.fail('此链接打不开');
+            } else {
+                return Linking.openURL(url);
+            }
+        }).catch(err => Toast.fail('An error occurred：' + url));
+        /*this.props.dispatch(
+            NavigationActions.navigate({
+                routeName: "WebPage",
+                params: {
+                    title: this.state.book.name,
+                    url: this.state.chapter.url
+                }
+            })
+        );*/
     };
 
     render() {
@@ -557,12 +579,13 @@ export default class extends Component {
                         <Icon type={AppFont.download} size={18} color="#444"/>
                         <Text style={styles.lineTxt}>缓存剩余章节</Text>
                     </Touchable>
-                    <Touchable
-                        style={[styles.line, { borderBottomWidth: 0 }]}
-                        onPress={this.onGoSwitching}
-                    >
+                    <Touchable style={styles.line} onPress={this.onGoSwitching}>
                         <Icon type={AppFont.change} size={16} color="#444"/>
                         <Text style={styles.lineTxt}>切换下载源</Text>
+                    </Touchable>
+                    <Touchable style={[styles.line, { borderBottomWidth: 0 }]} onPress={() => this.onToWebPage()}>
+                        <Icon type={AppFont.ie} size={18} color="#444"/>
+                        <Text style={styles.lineTxt}>浏览器打开</Text>
                     </Touchable>
                 </View>
             );

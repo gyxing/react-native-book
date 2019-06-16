@@ -1,16 +1,8 @@
 import request from "../utils/request";
-import { Format, Storage } from "../utils";
+import { Format, Storage, originList } from "../utils";
 import SQLite from "../db/SQLite";
 
 const sqLite = new SQLite();
-
-const originList = [
-    { key: "qu.la", search: "https://sou.xanbhx.com/search?siteid=qula&q=", searchCharset: 'utf8', charset: 'utf8' },
-    { key: "166xs.com", search: "http://zhannei.baidu.com/cse/search?s=4838975422224043700&wt=1&q=", searchCharset: 'utf8', charset: 'gbk' },
-    { key: "dingdiann.com", search: "https://www.dingdiann.com/searchbook.php?keyword=", charset: "utf8" },
-    // { key: "23us.cc", search: "https://sou.xanbhx.com/search?t=920895234054625192&siteid=23uscc&q=" },
-    { key: "biqukan.com", search: "http://www.biqukan.com/s.php?ie=gbk&s=2758772450457967865&q=", searchCharset: 'gbk', charset: 'gbk' },
-];
 
 /* 联网 - 搜索书本列表 */
 export async function search(params) {
@@ -213,71 +205,167 @@ export async function refresh({ book }) {
 /* 联网- 获取下载源列表信息 */
 export async function exchange({ book }) {
     return new Promise((resolve, reject) => {
-        let res = [];
-        Storage.get(`${book.name}-${book.author}`).then( sList => {
-            if(sList && sList.length > 0 && sList.length === originList.length) {
-                reLoop(sList);
-            } else {
-                initLoop(originList);
-            }
-        });
+        try {
+            let res = [];
+            Storage.get(`${book.name}-${book.author}`).then( sList => {
+                if(sList && sList.length > 0 && sList.length === originList.length) {
+                    reLoop(sList);
+                } else {
+                    initLoop(originList);
+                }
+            });
 
-        // 往后更新
-        function reLoop(arr) {
-            if (arr.length > 0) {
-                let rowItem = arr[0];
-                request(rowItem.url, {charset:rowItem.charset}).then(ret => {
-                    if (ret) {
-                        let newChapterName = Format.newChapterName(ret.data, rowItem.origin);
-                        res.push({ ...rowItem, newChapterName });
-                        initLoop(arr.filter((a, i) => i > 0));
-                    }else{
-                        initLoop(arr.filter((a, i) => i > 0));
-                    }
-                });
-            } else {
-                Storage.set(`${book.name}-${book.author}`, res);
-                resolve({ data: res });
-            }
-        }
-
-        // 首次加载
-        function initLoop(arr) {
-            if (arr.length > 0) {
-                let originItem = arr[0];
-                let netUrl = `${originItem.search}${encodeURIComponent(book.name)}`;
-                request(netUrl, {charset:originItem.searchCharset}).then(({ data }) => {
-                    let url = "", origin = "";
-                    let bookList = Format.book(data, originItem.key);
-                    for (let item of bookList) {
-                        if (item.name === book.name && item.author === book.author) {
-                            url = item.chaptersUrl;
-                            origin = item.origin;
-                            break;
+            // 往后更新
+            function reLoop(arr) {
+                if (arr.length > 0) {
+                    let rowItem = arr[0];
+                    request(rowItem.url, {charset:rowItem.charset}).then(({data}) => {
+                        if (data) {
+                            let newChapterName = Format.newChapterName(data, rowItem.origin);
+                            res.push({ ...rowItem, newChapterName });
+                            initLoop(arr.filter((a, i) => i > 0));
+                        }else{
+                            initLoop(arr.filter((a, i) => i > 0));
                         }
-                    }
-                    // 进入目录列表页面
-                    if (url) {
-                        request(url, {charset:originItem.charset}).then(ret => {
-                            if (ret) {
-                                let newChapterName = Format.newChapterName(ret.data, origin);
-                                res.push({ ...originItem, url, origin, newChapterName });
-                                initLoop(arr.filter((a, i) => i > 0));
-                            } else {
-                                initLoop(arr.filter((a, i) => i > 0));
-                            }
-                        });
-                    } else {
+                    }).catch(err => {
                         initLoop(arr.filter((a, i) => i > 0));
-                    }
-                });
-            } else {
-                Storage.set(`${book.name}-${book.author}`, res);
-                resolve({ data: res });
+                    });
+                } else {
+                    Storage.set(`${book.name}-${book.author}`, res);
+                    resolve({ data: res });
+                }
             }
+
+            // 首次加载
+            function initLoop(arr) {
+                if (arr.length > 0) {
+                    let originItem = arr[0];
+                    let netUrl = `${originItem.search}${encodeURIComponent(book.name)}`;
+                    request(netUrl, {charset:originItem.searchCharset}).then(({ data }) => {
+                        let url = "", origin = "";
+                        if (data) {
+                            let bookList = Format.book(data, originItem.key);
+                            for (let item of bookList) {
+                                if (item.name === book.name && item.author === book.author) {
+                                    url = item.chaptersUrl;
+                                    origin = item.origin;
+                                    break;
+                                }
+                            }
+                        }
+                        // 进入目录列表页面
+                        if (url) {
+                            request(url, {charset:originItem.charset}).then(ret => {
+                                if (ret) {
+                                    let newChapterName = Format.newChapterName(ret.data, origin);
+                                    res.push({ ...originItem, url, origin, newChapterName });
+                                    initLoop(arr.filter((a, i) => i > 0));
+                                } else {
+                                    initLoop(arr.filter((a, i) => i > 0));
+                                }
+                            });
+                        } else {
+                            initLoop(arr.filter((a, i) => i > 0));
+                        }
+                    }).catch(err => {
+                        initLoop(arr.filter((a, i) => i > 0));
+                    });
+                } else {
+                    Storage.set(`${book.name}-${book.author}`, res);
+                    resolve({ data: res });
+                }
+            }
+        } catch (e) {
+            console.log(e);
+            reject();
         }
     });
 }
+
+const oneReplace = (book, chapters, resolve) => {
+    // 查询原章节信息
+    sqLite.getChapter(book.curChapterId).then( oldChapter => {
+        let temp = chapters.find( item => item.name === oldChapter.name );
+        // 组合成新的数据
+        let chapter = {...oldChapter, ...temp, content: ''};
+        // 查询内容
+        searchContent({chapter}).then( ret2 => {
+            if(ret2.data) {
+                chapter.content = ret2.data;
+                let chapterId = chapter.id;
+                delete chapter.id;
+                // 更新
+                sqLite.updateChapter(chapterId, chapter).then(() => {
+                    resolve({data: {...chapter, id:chapterId}})
+                }).catch( () => {
+                    resolve()
+                })
+            } else {
+                resolve()
+            }
+        }).catch( () => {
+            resolve()
+        })
+    }).catch( () => {
+        resolve()
+    });
+};
+
+const allReplace = (bookTemp, book, chapters, resolve) => {
+    bookTemp.curChapterId = 0;
+    bookTemp.progress = '0.00%';
+    delete bookTemp.id;
+    // 更新书籍信息
+    updateBook({book, params: bookTemp}).then( ret2 => {
+        // 删除原来的章节列表
+        clearChapterByBookId({bookId: book.id}).then( () => {
+            // 批量添加新的章节列表
+            addChapters({chapters}).then( () => {
+                resolve({data:'success'})
+            }).catch( () => {
+                resolve()
+            })
+        }).catch( () => {
+            resolve()
+        })
+    }).catch( () => {
+        resolve()
+    });
+};
+
+const moreReplace = (bookTemp, book, chapters, resolve) => {
+    delete bookTemp.id;
+    // 更新书籍信息
+    updateBook({book, params:bookTemp}).then( ret2 => {
+        // 获取原章节列表
+        getChapters({bookId: book.id}).then( ret3 => {
+            let oldChapterList = ret3.data;
+            let keepList = oldChapterList.filter( item => item.id <= book.curChapterId );
+            // 删除原来的章节列表
+            clearChapterByBookId({bookId:book.id}).then( () => {
+                let index = 0;
+                for(let i in chapters) {
+                    if( chapters[i].name === keepList[keepList.length-1].name) {
+                        index = i;
+                        break;
+                    }
+                }
+                let newList = chapters.filter( (item,i) => i>index );
+                let newChapters = [...keepList, ...newList];
+                // 批量添加新的章节列表
+                addChapters({chapters: newChapters}).then( () => {
+                    resolve({data:'success'})
+                }).catch( () => {
+                    resolve()
+                })
+            }).catch( () => {
+                resolve()
+            })
+        })
+    }).catch( () => {
+        resolve()
+    });
+};
 
 /* 更改下载源 */
 export async function replaceChapters ({ book, dlWay, origin }) {
@@ -291,7 +379,8 @@ export async function replaceChapters ({ book, dlWay, origin }) {
             if(chapters && chapters.length > 0) {
                 switch(dlWay) {
                     case 'all':
-                        bookTemp.curChapterId = 0;
+                        allReplace(bookTemp, book, chapters, resolve);
+                        /*bookTemp.curChapterId = 0;
                         bookTemp.progress = '0.00%';
                         delete bookTemp.id;
                         // 更新书籍信息
@@ -309,11 +398,12 @@ export async function replaceChapters ({ book, dlWay, origin }) {
                             })
                         }).catch( () => {
                             resolve()
-                        });
+                        });*/
                         break;
                     case 'one':
+                        oneReplace(book, chapters, resolve);
                         // 查询原章节信息
-                        sqLite.getChapter(book.curChapterId).then( oldChapter => {
+                        /*sqLite.getChapter(book.curChapterId).then( oldChapter => {
                             let temp = chapters.find( item => item.name === oldChapter.name );
                             // 组合成新的数据
                             let chapter = {...oldChapter, ...temp, content:''};
@@ -337,10 +427,11 @@ export async function replaceChapters ({ book, dlWay, origin }) {
                             })
                         }).catch( () => {
                             resolve()
-                        });
+                        });*/
                         break;
                     case 'more':
-                        delete bookTemp.id;
+                        moreReplace(bookTemp, book, chapters, resolve);
+                        /*delete bookTemp.id;
                         // 更新书籍信息
                         updateBook({book, params:bookTemp}).then( ret2 => {
                             // 获取原章节列表
@@ -370,8 +461,32 @@ export async function replaceChapters ({ book, dlWay, origin }) {
                             })
                         }).catch( () => {
                             resolve()
-                        });
+                        });*/
                         break;
+                }
+            } else {
+                resolve()
+            }
+        }).catch( () => {
+            resolve()
+        })
+    })
+}
+
+export async function customizeOrigin({ book, dlWay, url, origin }) {
+    return new Promise((resolve, reject) => {
+        const originForm = originList.find(d => d.key === origin);
+        let bookTemp = {...book};
+        bookTemp.charset = originForm.charset;
+        bookTemp.url = url;
+        bookTemp.origin = origin;
+        searchChapters({book: bookTemp}).then( ret => {
+            let chapters = ret.data;
+            if(chapters && chapters.length > 0) {
+                switch(dlWay) {
+                    case 'all': allReplace(bookTemp, book, chapters, resolve); break;
+                    case 'more': moreReplace(bookTemp, book, chapters, resolve); break;
+                    default: resolve();
                 }
             } else {
                 resolve()

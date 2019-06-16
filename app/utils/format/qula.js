@@ -10,37 +10,39 @@ const QuLa = {
     // 格式化书籍列表
     books(html, origin) {
         let res = [];
-        try {
-            let booksHtml = getHtmlObjectLong(
-                html,
-                "li",
-                "li"
-            );
-            if (booksHtml.length > 1) {
-                booksHtml.shift();
-                for (const div of booksHtml) {
-                    // 书名
-                    let name = div.substring(
-                        div.indexOf("target=\"_blank\"") + 16,
-                        div.indexOf("</a>")
-                    ).trim();
-                    // 章节列表url
-                    let chaptersUrl = div.substring(
-                        div.indexOf("href=\"") + 6,
-                        div.indexOf("\" target=")
-                    );
-                    let author = removeTag(getHtmlObjectLong(div, "span class=\"s4\"", "span")[0]).trim(); // 作者
-                    let newChapterName = "";
-                    try {
-                        newChapterName = removeTag(getHtmlObjectLong(div, "span class=\"s3\"", "span")[0]).trim(); // 最新章节
-                    } catch (e1) {
-                    }
+        if (html) {
+            try {
+                let booksHtml = getHtmlObjectLong(
+                    html,
+                    "li",
+                    "li"
+                );
+                if (booksHtml.length > 1) {
+                    booksHtml.shift();
+                    for (const div of booksHtml) {
+                        // 书名
+                        let name = div.substring(
+                            div.indexOf("target=\"_blank\"") + 16,
+                            div.indexOf("</a>")
+                        ).trim();
+                        // 章节列表url
+                        let chaptersUrl = div.substring(
+                            div.indexOf("href=\"") + 6,
+                            div.indexOf("\" target=")
+                        );
+                        let author = removeTag(getHtmlObjectLong(div, "span class=\"s4\"", "span")[0]).trim(); // 作者
+                        let newChapterName = "";
+                        try {
+                            newChapterName = removeTag(getHtmlObjectLong(div, "span class=\"s3\"", "span")[0]).trim(); // 最新章节
+                        } catch (e1) {
+                        }
 
-                    res.push({ name, author, chaptersUrl, newChapterName, origin });
+                        res.push({ name, author, chaptersUrl, newChapterName, origin });
+                    }
                 }
+            } catch (e) {
+                console.log(e);
             }
-        } catch (e) {
-            console.log(e);
         }
         return res;
     },

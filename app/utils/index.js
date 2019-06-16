@@ -52,3 +52,12 @@ export const appHeight = Dimensions.get('window').height
 
 /* 书籍默认封面 */
 export const defaultImg = require('../images/default.jpg')
+
+/* 资源列表 */
+export const originList = [
+    { key: "qu.la", search: "https://sou.xanbhx.com/search?siteid=qula&q=", searchCharset: 'utf8', charset: 'utf8' },
+    { key: "166xs.com", search: "http://zhannei.baidu.com/cse/search?s=4838975422224043700&wt=1&q=", searchCharset: 'utf8', charset: 'gbk' },
+    { key: "dingdiann.com", search: "https://www.dingdiann.com/searchbook.php?keyword=", charset: "utf8" },
+    // { key: "23us.cc", search: "https://sou.xanbhx.com/search?t=920895234054625192&siteid=23uscc&q=" },
+    { key: "biqukan.com", search: "http://www.biqukan.com/s.php?ie=gbk&s=2758772450457967865&q=", searchCharset: 'gbk', charset: 'gbk' },
+];

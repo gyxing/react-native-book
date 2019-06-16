@@ -11,34 +11,36 @@ const XS166 = {
     // 格式化书籍列表
     books(html, origin) {
         let res = [];
-        try {
-            let booksHtml = getHtmlObjectLong(
-                html,
-                "div class=\"result-game-item-detail\"",
-                "div"
-            );
-            if (booksHtml.length > 0) {
-                for (let div of booksHtml) {
-                    let name = div.substring(
-                        div.indexOf("title=\"") + 7,
-                        div.indexOf("\" class=")
-                    ); // 书名
-                    let chaptersUrl = div.substring(
-                        div.indexOf("href=\"") + 6,
-                        div.indexOf("\" title=")
-                    ); // 章节列表url
-                    let author = removeTag(getHtmlObjectLong(div, 'a cpos="author"', 'a')[0]).trim(); // 作者
-                    let newChapterName = "";
-                    try {
-                        newChapterName = removeTag(getHtmlObjectLong(div, 'a cpos="newchapter"', "a")[0]).trim(); // 最新章节
-                    } catch (e1) {
-                    }
+        if (html) {
+            try {
+                let booksHtml = getHtmlObjectLong(
+                    html,
+                    "div class=\"result-game-item-detail\"",
+                    "div"
+                );
+                if (booksHtml && booksHtml.length > 0) {
+                    for (let div of booksHtml) {
+                        let name = div.substring(
+                            div.indexOf("title=\"") + 7,
+                            div.indexOf("\" class=")
+                        ); // 书名
+                        let chaptersUrl = div.substring(
+                            div.indexOf("href=\"") + 6,
+                            div.indexOf("\" title=")
+                        ); // 章节列表url
+                        let author = removeTag(getHtmlObjectLong(div, 'a cpos="author"', 'a')[0]).trim(); // 作者
+                        let newChapterName = "";
+                        try {
+                            newChapterName = removeTag(getHtmlObjectLong(div, 'a cpos="newchapter"', "a")[0]).trim(); // 最新章节
+                        } catch (e1) {
+                        }
 
-                    res.push({ name, author, chaptersUrl, newChapterName, origin });
+                        res.push({ name, author, chaptersUrl, newChapterName, origin });
+                    }
                 }
+            } catch (e) {
+                console.log(e);
             }
-        } catch (e) {
-            console.log(e);
         }
         return res;
     },

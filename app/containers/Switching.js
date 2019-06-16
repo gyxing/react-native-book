@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { StyleSheet, View, Text, ScrollView } from "react-native";
-import { Icon, Toast } from "antd-mobile-rn";
+import { Icon, Toast, Modal, Radio, TextareaItem, List } from "antd-mobile-rn";
 import { Header, AppFont, Touchable } from "../components";
 import Loading from "./Loading";
 import {
@@ -9,8 +9,11 @@ import {
     createAction,
     appWidth,
     NavigationActions,
-    Storage
+    Storage,
+    originList
 } from "../utils";
+
+const RadioItem = Radio.RadioItem;
 
 @connect(({ book, loading }) => ({ ...book, ...loading }))
 export default class extends Component {
@@ -20,9 +23,18 @@ export default class extends Component {
         this.refreshChapterOne = params.refreshChapterOne;
         this.refreshChapterMore = params.refreshChapterMore;
         this.book = params.book;
+        this.ways = [
+            {value: 'one', label: '仅当前章节'},
+            {value: 'more', label: '剩余章节'},
+            {value: 'all', label: '全本'}
+        ];
         this.state = {
             dlWay: params.dlWay || "one",
-            resourceList: []
+            resourceList: [],
+            loadEnded: false,
+            visible: false,
+            originType: originList[0].key,
+            originUrl: ''
         };
     }
 
@@ -33,8 +45,12 @@ export default class extends Component {
                 if(data.length > 0) {
                     this.setState({ resourceList: data });
                 } else {
-                    Toast.fail('缺少资源', 2)
+                    // Toast.fail('缺少资源', 2);
+                    this.setState({ loadEnded: true })
                 }
+            },
+            error: () => {
+                this.setState({ loadEnded: true })
             }
         }));
     }
@@ -50,6 +66,13 @@ export default class extends Component {
             book: this.book,
             dlWay: this.state.dlWay,
             origin: item,
+            ...this.afterCallback()
+        }));
+    };
+
+    afterCallback = () => {
+        const {dispatch} = this.props;
+        return {
             callback: () => {
                 Toast.hide();
                 dispatch(createAction('book/getBooks')());
@@ -74,30 +97,57 @@ export default class extends Component {
                 }
                 dispatch(NavigationActions.back());
             }
-        }));
+        }
+    };
+
+    onAddModal = () => {
+        this.setState({ visible: true })
+    };
+
+    onRadio = (e, item) => {
+        if (e.target.checked) {
+            this.setState({ originType: item.key });
+        }
+    };
+
+    submitExchange = () => {
+        const { originType, originUrl } = this.state;
+        if (!originType || !originUrl) {
+            Modal.alert('请将数据请写完整');
+            return false;
+        }
+        Modal.alert('确定使用此数据源？', '', [
+            { text: '再想想' },
+            {
+                text: '确定使用',
+                onPress: () => {
+                    this.setState({ visible: false });
+                    Toast.loading("加载中...", 0);
+                    this.props.dispatch(createAction("book/customizeOrigin")({
+                        book: this.book,
+                        dlWay: this.state.dlWay,
+                        origin: originType,
+                        url: originUrl,
+                        ...this.afterCallback()
+                    }))
+                }
+            },
+        ]);
     };
 
     render() {
-        const { dlWay, resourceList } = this.state;
+        const { dlWay, resourceList, loadEnded } = this.state;
         return (
             <View style={styles.container}>
                 <Header back title="切换下载源"/>
                 <View style={styles.center}>
-                    <Touchable style={[styles.center, styles.raItem]} onPress={() => this.setDlWay("one")}>
-                        <Icon type={dlWay === "one" ? AppFont.checkboxOn : AppFont.checkbox}
-                              color={dlWay === "one" ? "#07f" : "#999"}/>
-                        <Text> 仅当前章节</Text>
-                    </Touchable>
-                    <Touchable style={[styles.center, styles.raItem]} onPress={() => this.setDlWay("more")}>
-                        <Icon type={dlWay === "more" ? AppFont.checkboxOn : AppFont.checkbox}
-                              color={dlWay === "more" ? "#07f" : "#999"}/>
-                        <Text> 剩余章节</Text>
-                    </Touchable>
-                    <Touchable style={[styles.center, styles.raItem]} onPress={() => this.setDlWay("all")}>
-                        <Icon type={dlWay === "all" ? AppFont.checkboxOn : AppFont.checkbox}
-                              color={dlWay === "all" ? "#07f" : "#999"}/>
-                        <Text> 全本</Text>
-                    </Touchable>
+                    {this.ways.map((item,index) => (
+                        <Touchable key={index} style={[styles.center, styles.raItem]} onPress={() => this.setDlWay(item.value)}>
+                            <Icon type={dlWay === item.value ? AppFont.checkboxOn : AppFont.checkbox}
+                                  color={dlWay === item.value ? "#07f" : "#999"}/>
+                            <Text> {item.label}</Text>
+                        </Touchable>
+                    ))}
                 </View>
                 {resourceList.length > 0 ? (
                     <ScrollView style={{ borderTopColor: "#eee", borderTopWidth: 0.5 }}>
@@ -114,10 +164,64 @@ export default class extends Component {
                         })}
                     </ScrollView>
                 ) : (
-                    <Loading msg="加载略慢，清耐心等待"/>
+                    loadEnded ? (
+                        <View style={[styles.center, {flex: 1}]}>
+                            <Text>缺少资源</Text>
+                        </View>
+                    ) : (
+                        <Loading msg="加载略慢，请耐心等待"/>
+                    )
                 )}
+                {dlWay !== 'one' ? (
+                    <Touchable style={[styles.center, styles.footer]} onPress={() => this.onAddModal()}>
+                        <Text>手动输入资源链接</Text>
+                    </Touchable>
+                ) : null}
+                {this.renderModal()}
             </View>
         );
+    }
+
+    renderModal() {
+        const way = this.ways.find(d => d.value === this.state.dlWay);
+        return (
+            <Modal
+                popup
+                visible={this.state.visible}
+                animationType="slide-up"
+                maskClosable={true}
+                onClose={() => {
+                    this.setState({ visible: false })
+                }}
+            >
+                <ScrollView style={styles.content}>
+                    <List renderHeader={'替换章节： ' + way.label} />
+                    <List renderHeader={'选择来源网站'}>
+                        {originList.map((item, index) => (
+                            <RadioItem
+                                key={index}
+                                checked={this.state.originType === item.key}
+                                onChange={(e) => this.onRadio(e, item)}
+                            >
+                                {item.key}
+                            </RadioItem>
+                        ))}
+                    </List>
+                    <List renderHeader={'小说目录所在网址'}>
+                        <TextareaItem
+                            clear
+                            autoHeight
+                            value={this.state.originUrl}
+                            placeholder="在此输入网址"
+                            onChange={ value => this.setState({originUrl: value}) }
+                        />
+                    </List>
+                </ScrollView>
+                <Touchable style={[styles.center, styles.footer, {backgroundColor: '#07f'}]} onPress={() => this.submitExchange()}>
+                    <Text style={{color: '#fff'}}>切换至该资源</Text>
+                </Touchable>
+            </Modal>
+        )
     }
 }
 
@@ -149,5 +253,13 @@ const styles = StyleSheet.create({
     },
     desc: {
         fontSize: 12
+    },
+    footer: {
+        height: 50,
+        borderTopWidth: 0.5,
+        borderTopColor: "#ddd"
+    },
+    content: {
+        padding: 0
     }
 });

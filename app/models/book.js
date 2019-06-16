@@ -14,7 +14,8 @@ import {
     removeBook,
     refresh,
     exchange,
-    replaceChapters
+    replaceChapters,
+    customizeOrigin
 } from "../services/book";
 
 export default {
@@ -153,10 +154,12 @@ export default {
         },
         /* 切换下载源 */
         * exchange({ payload }, { call, put }) {
-            const { callback } = payload;
+            const { callback, error } = payload;
             const { data } = yield call(exchange, payload);
             if (data && callback) {
                 callback(data);
+            } else if (error) {
+                error()
             }
         },
         /* 替换当前章节 */
@@ -172,8 +175,20 @@ export default {
             }else{
                 console.log('失败')
             }
+        },
+        /* 自定义数据源地址 */
+        * customizeOrigin({ payload }, { call, put }) {
+            const { callback, callbackMore, dlWay } = payload;
+            const { data } = yield call(customizeOrigin, payload);
+            if (data) {
+                switch (dlWay) {
+                    case 'more': callbackMore(); break;
+                    case 'all': callback(); break;
+                }
+            }else{
+                console.log('失败')
+            }
         }
-
     },
     subscriptions: {
         setup({ dispatch }) {
