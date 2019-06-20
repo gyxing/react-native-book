@@ -20,7 +20,7 @@ import Search from './containers/Search'
 import Detail from './containers/Detail'
 import Read from './containers/Read'
 import Switching from './containers/Switching'
-import WebPage from './containers/WebPage'
+import Proxy from './containers/Proxy'
 
 import { createAction } from './utils'
 import SQLite from './db/SQLite'
@@ -34,7 +34,7 @@ const MainNavigator = StackNavigator(
     Detail: { screen: Detail },
     Read: { screen: Read },
     Switching: { screen: Switching },
-    WebPage: { screen: WebPage },
+    Proxy: { screen: Proxy },
   },
   {
     headerMode: 'none',

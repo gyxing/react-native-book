@@ -214,9 +214,11 @@ export default class extends Component {
                             value={this.state.originUrl}
                             placeholder="在此输入网址"
                             onChange={ value => this.setState({originUrl: value}) }
+                            style={{paddingHorizontal: 16}}
                         />
                     </List>
                 </ScrollView>
+                <View style={{height: 30}} />
                 <Touchable style={[styles.center, styles.footer, {backgroundColor: '#07f'}]} onPress={() => this.submitExchange()}>
                     <Text style={{color: '#fff'}}>切换至该资源</Text>
                 </Touchable>

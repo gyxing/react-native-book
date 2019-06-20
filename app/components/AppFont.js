@@ -23,7 +23,8 @@ const AppFont = {
   menu: '\uE639',
   add: '\uE627',
   share: '\uE671',
-  ie: '\uE69B'
+  ie: '\uE69B',
+  setup: '\uE672'
 }
 
 export default AppFont

@@ -53,6 +53,10 @@ export default class extends Component {
     )
   }
 
+  onProxy = () => {
+    this.props.dispatch(NavigationActions.navigate({ routeName: "Proxy" }))
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -90,6 +94,11 @@ export default class extends Component {
             brief="字体大小、阅读模式等设置"
             onPress={this.onReset}
           />
+          {/*<IButton
+            label="代理设置"
+            brief=""
+            onPress={this.onProxy}
+          />*/}
           <WhiteSpace />
           <IButton label="免责声明" />
         </View>
