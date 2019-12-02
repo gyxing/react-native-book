@@ -304,6 +304,7 @@ export default class extends Component {
     } else {
       imgSource = require("../images/pages/default.png");
     }
+    console.log(chapter.content)
     return (
       <ImageBackground
         source={imgSource}

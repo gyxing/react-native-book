@@ -68,13 +68,15 @@ const QuLa = {
     content(html) {
         try {
             let list = getHtmlObjectLong(html, "div id=\"content\"", "div");
-            let content = removeTag(
-                replaceAll(list[0], "<br />", "\n")
-            );
+            let content = replaceAll(list[0], "<br />", "\n");
+            content = replaceAll(content, "<br/>", "\n");
+            content = replaceAll(content, "<br>", "\n");
+            content = removeTag(content);
             content = replaceAll(content, "&nbsp;", "").trim();
             content = replaceAll(content, "Ｘ２３ＵＳ．ＣＯＭ更新最快", "");
             return replaceAll(content, "&nbsp;", "").trim();
         } catch (e) {
+          alert(e)
         }
         return "";
     },

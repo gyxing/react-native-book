@@ -154,8 +154,7 @@ export default class extends Component {
                         {resourceList.map((item, index) => {
                             let isCur = this.book.origin === item.origin;
                             return (
-                                <Touchable key={index} style={styles.row} activeOpacity={isCur ? 1 : 0.8}
-                                           onPress={isCur ? null : () => this.onRowClick(item)}>
+                                <Touchable key={index} style={styles.row} onPress={() => this.onRowClick(item)}>
                                     <Text style={styles.name}>{item.key} {isCur ?
                                         <Text style={{ fontSize: 12, color: "#07f" }}>（当前）</Text> : ""}</Text>
                                     <Text style={styles.desc}>最新章节：{item.newChapterName || ""}</Text>
